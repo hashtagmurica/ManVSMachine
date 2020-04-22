@@ -6,11 +6,5 @@ spacebar:     jump
 
 Goal: Get to top of blue obstacle on the right
 
-Next steps:
 
-- Scroll screen left and right to create "obstacle course"
-- Add animation and Sprites
-- Tweak performance as needed; multithreaded?
-- Refactor code
-- A.I.
-
+# uncomment the line in main "# run_human_player()" to run it in non-AI mode

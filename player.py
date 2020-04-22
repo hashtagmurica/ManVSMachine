@@ -16,11 +16,15 @@ class Player():
         self.moving_left = False
         self.moving_right = False
         self.on_obstacle = False # False = on the "ground"
-        self.obstacle = 0 # track the obstacle we are on
+        self.obstacle = -1 # track the obstacle we are on; ground is considered obstacle '-1'
         self.jumping = False
         self.jump_counter = 10
         self.jump_dir = 1
         self.jump_modifier = 0.5
+        self.life_counter = 700
+
+    def get_position(self):
+        return self.x, self.y, self.obstacle
 
     def draw(self):
         pygame.draw.rect(self.screen, self.color, (self.x, self.y, self.width, self.height))
@@ -72,12 +76,14 @@ class Player():
             return False
 
     def collision_bottom(self, fall_dist):
-        '''Return -1 if no collision, otherwise return collision difference'''
+        '''Return -1 if no collision, otherwise return collision difference
+        Also sets the id number of the block we've landed on (excludes ground).'''
         # check for collision with the ground first
         if self.y + self.height - fall_dist > self.ground: # hit the ground
             self.on_obstacle = False
+            self.obstacle = -1
             return self.y + self.height - fall_dist - self.ground
-        else:
+        else: # figure out what obstacle we landed on
             for idx,obstacle in enumerate(game_objects.obstacles):
                 if self.y + self.height < obstacle.y:
                     if (self.x >= obstacle.x and self.x <= obstacle.x + obstacle.width) or \
@@ -114,4 +120,3 @@ class Player():
                 not (self.y + self.height <= obstacle.y or self.y >= obstacle.y + obstacle.height):
                 return True
         return False
-
