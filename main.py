@@ -76,6 +76,7 @@ def run_human_player():
     sys.exit()
 
 
+'''Run A.I. simulation of the game'''
 def eval_genomes(genomes, config):
 
     # lists to hold the players, the genomes, and the neural net associated with that genome
