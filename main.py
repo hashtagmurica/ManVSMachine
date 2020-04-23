@@ -162,6 +162,27 @@ def eval_genomes(genomes, config):
                 pygame.quit()
                 sys.exit()
 
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_SPACE]:
+            if not (human_player.jumping):
+                human_player.jumping = True
+                human_player.on_obstacle = False
+
+        if keys[pygame.K_LEFT]:
+            human_player.moving_left = True
+            human_player.moving_right = False
+
+        elif keys[pygame.K_RIGHT]:
+            human_player.moving_left = False
+            human_player.moving_right = True
+
+        else:
+            human_player.moving_left = False
+            human_player.moving_right = False
+
+        human_player.move()
+
         obstacles = game_objects.obstacles
         winning_path = [0, 1, 2, 3, 4]
         goal = 4
