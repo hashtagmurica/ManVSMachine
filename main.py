@@ -343,11 +343,11 @@ def game_menu():
 
     screen.fill((0, 0, 0))
 
-    screen.blit(human_img, (screen_width/3, screen_height/5))
+    screen.blit(human_img, (int(screen_width/3), int(screen_height/5)))
     text_surf, text_rect = text_objects('VS', button_font, white)
     text_rect.center = (int(screen_width / 2), int(screen_height / 3.5))
     screen.blit(text_surf, text_rect)
-    screen.blit(ai_img, (screen_width*2/3 -80, screen_height/5))
+    screen.blit(ai_img, (int(screen_width*2/3 - 80), int(screen_height/5)))
 
     while intro:
         for event in pygame.event.get():
@@ -400,7 +400,7 @@ def make_button (text, font, textcolor, color_off, color_on, x_pos, y_pos, width
     click = pygame.mouse.get_pressed()
 
     if x_pos + width > mouse[0] > x_pos and y_pos + height > mouse[1] > y_pos:
-        pygame.draw.rect(screen, color_on, (x_pos, y_pos, width, height))
+        pygame.draw.rect(screen, color_on, (int(x_pos), int(y_pos), int(width), int(height)))
         if click[0] == 1 and action != None:
             if action == 'sett':
                 #start game action
@@ -419,10 +419,10 @@ def make_button (text, font, textcolor, color_off, color_on, x_pos, y_pos, width
             elif action == 'hard':
                 run_human_player()
     else:
-        pygame.draw.rect(screen, color_off, (x_pos, y_pos, width, height))
+        pygame.draw.rect(screen, color_off, (int(x_pos), int(y_pos), int(width), int(height)))
 
     text_surf, text_rect = text_objects(text, font, textcolor)
-    text_rect.center = ( (x_pos + int(width/2), y_pos + int(height/2)) )
+    text_rect.center = ( (int(x_pos) + int(width/2), int(y_pos) + int(height/2)) )
 
     screen.blit(text_surf, text_rect)
 
