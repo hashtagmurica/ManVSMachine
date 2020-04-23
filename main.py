@@ -173,14 +173,14 @@ def eval_genomes(genomes, config):
             else: # stay where we are for right now (on top of the goal block)
                 cur_goal = goal
             from_goal = obstacles[cur_goal].x - x
-            output = neural_nets[players.index(p)].activate((x, from_goal))
+            output = neural_nets[players.index(p)].activate((x, y, from_goal))
 
-            if output[1] < 0.5:
+            if output[1] > 0.5:
                 if not p.jumping:
                     p.jumping = True
                     p.on_obstacle = False
 
-            if output[0] > 0:
+            if output[0] > 0.5:
                 p.moving_left = False
                 p.moving_right = True
             else:
@@ -197,11 +197,11 @@ def eval_genomes(genomes, config):
 
             # find if we backtracked from our cur_goal
             if obst < prev_obst:
-                genome[i].fitness -= 1
+                genome[players.index(p)].fitness -= 1
 
             # see if we are any closer to our goal
             if obst > prev_obst:
-                genome[i].fitness += 1
+                genome[players.index(p)].fitness += 2
 
             if obst != goal:
                 new_from_goal = abs(obstacles[(obst + 1)].x - x)
@@ -209,25 +209,27 @@ def eval_genomes(genomes, config):
                 new_from_goal = goal
 
             if new_from_goal < abs(from_goal):
-                genome[i].fitness += 0.1
+                genome[players.index(p)].fitness += 0.1
             else:
                 genome[i].fitness -= 0.1
 
             # standing or jumping in place?
-            if prev_x == x and obst != goal:
-                genome[i].fitness -= 5
+            if prev_x < x + p.speed and prev_x > x - p.speed and obst != goal:
+                genome[players.index(p)].fitness -= 5
+                p.life_counter -= 2
 
             # did we achieve the goal?
             if obst == goal:
-                genome[i].fitness += 5
-                ai_score += 1
+                genome[players.index(p)].fitness += 10
             else:
                 # decrease exist counter for this player
                 p.life_counter -= 1
 
             if p.life_counter < 0:
                 # remove this player and neural net
-                genome[players.index(p)].fitness -= 5
+                genome[players.index(p)].fitness -= 5  # remove some fitness for not making it to the goal
+                genome[players.index(
+                    p)].fitness += 2 * obst  # add some fitness back proportional to how close it got to the goal
                 neural_nets.pop(players.index(p))
                 genome.pop(players.index(p))
                 players.pop(players.index(p))
