@@ -153,6 +153,8 @@ def eval_genomes(genomes, config):
 
     clock = pygame.time.Clock()
 
+    human_player = Player(screen, pygame.Color((255, 165, 0)))
+
     run_simulation = True
     while run_simulation and len(players) > 0:
         clock.tick(50)
