@@ -361,22 +361,27 @@ def run(config_file):
     print(results)
 
 
+# output the information screen
 def game_info():
 
     info = True
 
+    # loop ensuring the objects remain created
     while info:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
 
+        # paint a black background that matches the game
         screen.fill((0,0,0))
 
+        # Title block at the top of the screen
         text_surf, text_rect = text_objects('Man vs Machine', menu_font, lightblue)
         text_rect.center = (int(screen_width / 2), 50)
         screen.blit(text_surf, text_rect)
 
+        # lines 383 - 428 simply output text explanations to the screen
         text_surf, text_rect = text_objects('Man vs Machine is a small-scale platforming game', info_font, white)
         text_rect.center = (int(screen_width / 3), 125)
         screen.blit(text_surf, text_rect)
@@ -426,12 +431,14 @@ def game_info():
         pygame.display.update()
 
 
+# output the starting menu
 def game_menu():
 
     intro = True
 
     screen.fill((0, 0, 0))
 
+    # add some dope icons in the menu to make it pretty
     screen.blit(human_img, (int(screen_width/3), int(screen_height/5)))
     text_surf, text_rect = text_objects('VS', button_font, white)
     text_rect.center = (int(screen_width / 2), int(screen_height / 3.5))
@@ -444,11 +451,12 @@ def game_menu():
                 pygame.quit()
                 quit()
 
-
+        # title words
         text_surf, text_rect = text_objects('Welcome to Man vs Machine', menu_font, lightblue)
         text_rect.center = (int(screen_width / 2), int(screen_height / 2))
         screen.blit(text_surf, text_rect)
 
+        # call functions to create buttons to move to other screens or quit
         make_button('Start', button_font, green, red, lightred, 150, screen_height - 200, 200, 100, "sett")
         make_button('Quit', button_font, green, red, lightred, screen_width - 100, screen_height-50, 100, 50, "quit")
         make_button('Info', button_font, green, red, lightred, screen_width - 200 - 150, screen_height - 200, 200, 100, "info")
@@ -456,6 +464,7 @@ def game_menu():
         pygame.display.update()
 
 
+# once user starts the game, let them select the difficulty with this menu
 def game_settings():
 
     sett = True
@@ -483,6 +492,7 @@ def game_settings():
         pygame.display.update()
 
 
+# button creator function
 def make_button (text, font, textcolor, color_off, color_on, x_pos, y_pos, width, height, action = None):
     mouse = pygame.mouse.get_pos()
 
@@ -516,6 +526,7 @@ def make_button (text, font, textcolor, color_off, color_on, x_pos, y_pos, width
     screen.blit(text_surf, text_rect)
 
 
+# helper function to create text blocks
 def text_objects(text, font, color):
 
     text_surface = font.render(text, True, color)
@@ -533,6 +544,5 @@ if __name__ == "__main__":
     config_med = os.path.join(local_dir, 'config-neat-medium.txt')
     config_hard = os.path.join(local_dir, 'config-neat-hard.txt')
 
-    # this will run the normal configuration for the base implementation of AI
-    # run(config_path)
+
     game_menu()
