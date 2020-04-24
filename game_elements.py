@@ -48,15 +48,17 @@ class Wall(GameObject):
         self.image.fill(Color("#000000"))
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos):
+    def __init__(self, pos, color):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface((40, 40))
-        self.image.fill(Color("#FFFFFF"))
+        self.image.fill(color)
         self.rect = pygame.Rect((pos), (40, 40))
         self.speed = 0
         self.vert = 0
         self.grounded = False
         self.life_counter = 700
+        self.win = False
+        self.isBot = False
 
     def move(self, left, right, space, up, world):
         # Process key input results:
@@ -88,7 +90,10 @@ class Player(pygame.sprite.Sprite):
             if pygame.sprite.collide_rect(self, tile):
                 # Reached goal object
                 if isinstance(tile, Goal):
-                    world.createWorld(self, world.tiles, world.objects)
+                    self.vert = 0
+                    self.speed = 0
+                    self.win = True
+                    world.createWorld(self, self, world.tiles, world.objects)
                 # Left and right collisions
                 if speed < 0:
                     self.rect.left = tile.rect.right
@@ -172,11 +177,15 @@ class SolutionPath(object):
     World class handles level creation and reset
     upon contact with the goal
 '''
-
 class World(object):
-    def __init__(self, player, tiles, objects):
+    def __init__(self, player, ai_players, tiles, objects):
         self.player = player
+        self.ai_players = ai_players
+        for bot in ai_players:
+            bot.rect = pygame.Rect((800, 1520), (40, 40))
+            bot.win = False
         self.player.rect = pygame.Rect((800, 1520), (40, 40))
+        self.player.win = False
         self.tiles = tiles
         self.objects = objects
         self.room1 = [
@@ -385,7 +394,7 @@ class World(object):
             "   XXX        XXXX  ",
             "                    "
         ]
-        self.createWorld(player, tiles, objects)
+        self.createWorld(player, ai_players, tiles, objects)
 
     '''
         createWorld function takes in solution scheme as input
@@ -400,10 +409,11 @@ class World(object):
         Room instructions are an array of strings with Xs or ' '
         A tile is placed where every X is to create the section.
     '''
-    def createWorld(self, player, tiles, objects):
+    def createWorld(self, player, ai_players, tiles, objects):
         self.tiles.clear()
         self.objects.empty()
         self.player.rect = pygame.Rect((800, 1520), (40, 40))
+        self.player.win = False
         
         soln = SolutionPath().level
         goalRoom = True
@@ -474,6 +484,10 @@ class World(object):
         objects.add(wall)
 
         objects.add(self.player)
+        for bot in self.ai_players:
+            bot.win = False
+            bot.rect = pygame.Rect((800, 1520), (40, 40))
+            objects.add(bot)
 
         self.tiles = tiles
         self.objects = objects
