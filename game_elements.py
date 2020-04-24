@@ -1,8 +1,15 @@
 import pygame
 from pygame import *
+import random
 
 SCREEN = pygame.Rect((0, 0, 960, 640))
 LEVEL = pygame.Rect((0, 0, 1600, 1600))
+
+'''
+    Player class, Camera, and other GameObjects
+
+    Reference: https://stackoverflow.com/questions/14354171/
+'''
 
 class Camera(object):
     def __init__(self, level_size):
@@ -17,74 +24,71 @@ class Camera(object):
         self.state = pygame.Rect((SCREEN.centerx-l, SCREEN.centery-t, self.state.width, self.state.height))
 
 class GameObject(pygame.sprite.Sprite):
-    def __init__(self, image_file, pos):
+    def __init__(self, pos, length, width):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((20, 20))
-        self.image.blit(pygame.image.load(image_file).convert(), [0,0])
-        self.rect = pygame.Rect((pos), (20, 20))
+        self.image = pygame.Surface((length, width))
+        self.rect = pygame.Rect((pos), (length, width))
 
     def update(self):
         pass
 
 class Tile(GameObject):
     def __init__(self, pos):
-        super().__init__("tile.png", pos)
+        super().__init__(pos, 20, 20)
+        self.image.fill(Color("#000000"))
 
 class Goal(GameObject):
     def __init__(self, pos):
-        super().__init__("goal.png", pos) # GET GOAL IMAGE
+        super().__init__(pos, 20, 20)
+        self.image.fill(Color("#0033FF"))
+        
+class Wall(GameObject):
+    def __init__(self, pos, length, width):
+        super().__init__(pos, length, width)
+        self.image.fill(Color("#000000"))
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, image_file, tiles, pos):
+    def __init__(self, pos):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((40, 60))
-        self.image.fill((255, 255, 255))
-        #self.image.blit(pygame.image.load(image_file).convert(), [0,0])
-        self.rect = self.image.get_rect(topleft=pos)
-        #self.tiles = tiles
+        self.image = pygame.Surface((40, 40))
+        self.image.fill(Color("#FFFFFF"))
+        self.rect = pygame.Rect((pos), (40, 40))
         self.speed = 0
         self.vert = 0
-        self.moving_left = False
-        self.moving_right = False
-        self.jumping = False
         self.grounded = False
         self.life_counter = 700
 
-    def move(self, left, right, space, tiles):
+    def move(self, left, right, space, up, world):
         # Process key input results:
         # Moving left or right
         if left:
-            self.speed = -5
-            print("left")
-        elif right:
-            self.speed = 5
-            print("right")
+            self.speed = -10
+        if right:
+            self.speed = 10
         # Jumping
-        if space:
+        if space or up:
             if self.grounded:
-                self.vert -= 8
-                print("jump")
+                self.vert -= 12
         # Falling
         if not self.grounded:
-            self.vert += 1
+            self.vert += 0.5
         if not left and not right:
             self.speed = 0
 
         # Update position
         self.rect.left += self.speed
-        self.collision(self.speed, 0, tiles)
+        self.collision(self.speed, 0, world)
 
         self.rect.top += self.vert
         self.grounded = False
-        self.collision(0, self.vert, tiles)
+        self.collision(0, self.vert, world)
 
-
-    def collision(self, speed, vert, tiles):
-        for tile in tiles:
+    def collision(self, speed, vert, world):
+        for tile in world.tiles:
             if pygame.sprite.collide_rect(self, tile):
                 # Reached goal object
                 if isinstance(tile, Goal):
-                    print("Reached Goal")
+                    world.createWorld(self, world.tiles, world.objects)
                 # Left and right collisions
                 if speed < 0:
                     self.rect.left = tile.rect.right
@@ -99,80 +103,377 @@ class Player(pygame.sprite.Sprite):
                     self.grounded = True
 
 '''
-class GameObject(pygame.sprite.Sprite):
-    def __init__(self, image_file, pos, *groups):
-        super().__init__(*groups)
-        self.image = pygame.Surface((20, 20))
-        self.image.blit(pygame.image.load(image_file).convert(), [0,0])
-        self.rect = pygame.Rect((pos), (20, 20))
+    SolutionPath class generates scheme for a beatable level
 
-class Tile(GameObject):
-    def __init__(self, pos, *groups):
-        super().__init__("tile.png", pos, *groups)
+    Random Level Generation, modeled after Spelunky
+    Reference: http://tinysubversions.com/spelunkyGen/
 
-class Goal(GameObject):
-    def __init__(self, pos, *groups):
-        super().__init__("goal.png", pos, *groups) # GET GOAL IMAGE
+    This algorithm creates a 4x4 matrix of rooms and assigns
+    each a value, 0-3
+        0 rooms are not part of solution path
+        1 rooms can be passed through left and right
+        2 rooms can be passed through left, right, and bottom
+        3 rooms can be passed through left, right, and top
 
-class Player(pygame.sprite.Sprite):
-    def __init__(self, image_file, tiles, pos, *groups):
-        super().__init__(*groups)
-        self.image = pygame.Surface((40, 60))
-        self.image.fill((255, 255, 255))
-        #self.image.blit(pygame.image.load(image_file).convert(), [0,0])
-        self.rect = self.image.get_rect(topleft=pos)
-        #elf.tiles = tiles
-        self.speed = 0
-        self.vert = 0
-        self.moving_left = False
-        self.moving_right = False
-        self.jumping = False
-        self.grounded = False
-        self.life_counter = 700
+    Upon generation, the sequence of rooms is guaranteed to have
+    a continuous path from the top row to the bottom row
+'''
+class SolutionPath(object):
+    def __init__(self):
+        self.findSolution()
 
-    def move(self, left, right, space, tiles):
-        # Process key input results:
-        # Moving left or right
-        if left:
-            self.speed = -5
-        elif right:
-            self.speed = 5
-        # Jumping
-        if space:
-            if self.grounded:
-                self.vert -= 8
-        # Falling
-        if not self.grounded:
-            self.vert += 1
-        if not left and not right:
-            self.speed = 0
+    def findSolution(self):
+        # Level is the final level scheme
+        self.level = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+        i = 0
+        j = random.randint(0,3)
 
-        # Update position
-        self.rect.left += self.speed
-        self.rect.top += self.vert
-        self.grounded = False
+        # Make random room in top row a 1
+        self.level[i][j] = 1
+
+        # Decide where to go next randomly
+        # 1 or 2 = Left; 3 or 4 = Right; 5 = Down
+        # Moving left into left edge or right into right edge
+        # calls for moving down instead
+        while i < 3:
+            go = random.randint(1,5)
+            dropped = False
+            if go == 1 or go==2:
+                if j - 1 < 0:
+                    if self.level[i][j] == 3:
+                        continue
+                    dropped = True
+                    self.level[i][j] = 2
+                    i += 1
+                else:
+                    j -= 1
+            elif go==3 or go==4:
+                if j + 1 > 3:
+                    if self.level[i][j] == 3:
+                        continue
+                    dropped = True
+                    self.level[i][j] = 2
+                    i += 1
+                else:
+                    j += 1
+            else:
+                if self.level[i][j] == 3:
+                    continue
+                dropped = True
+                self.level[i][j] = 2
+                i += 1
+            # Place next room
+            if dropped or self.level[i][j] == 3:
+                self.level[i][j] = 3
+            else:
+                self.level[i][j] = 1 
+
+'''
+    World class handles level creation and reset
+    upon contact with the goal
+'''
+
+class World(object):
+    def __init__(self, player, tiles, objects):
+        self.player = player
+        self.player.rect = pygame.Rect((800, 1520), (40, 40))
+        self.tiles = tiles
+        self.objects = objects
+        self.room1 = [
+            "                    ",
+            "      XXXXXXXXXXXX  ",
+            "XXXXXXXXXXXXXXXXXXXX",
+            "                    ",
+            "                    ",
+            "         XXXXX      ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "          XXXXXXXX  ",
+            "                    ",
+            "                    ",
+            "  XXXXXXX           ",
+            "                    ",
+            "                    ",
+            "XXXXXXX   XXXXXXXXXX",
+            "     XXXXXXXXXXXXXX ",
+            "                    "
+        ]
+
+        self.room1_2 = [
+            "                    ",
+            "  XXXXXXXXXXXXX   XX",
+            "XXXXXXXXXXXXXXXXXXXX",
+            "          XXXX      ",
+            "               XX   ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            " XXXXXX             ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "         XXXXXXXXXXX",
+            "      XXXXXXXXX  XXX",
+            "   XXX    XX  XXXX  ",
+            "XXXXXXXX            ",
+            "                    "
+        ]
+
+        self.room2 = [
+            "                    ",
+            "  XXXXXXXXXXXXX   XX",
+            "XXXXXXXXXXXXXXXXXXXX",
+            "          XXXX      ",
+            "                    ",
+            "                    ",
+            "            XXX     ",
+            "                    ",
+            "                    ",
+            "    XXX             ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "               XXXXX",
+            "                    ",
+            "XXXX                ",
+            "   XXX        XXXX  ",
+            "                    "
+        ]
+
+        self.room2_2 = [
+            "                    ",
+            "  XXXXXXXXXXXXX   XX",
+            "XXXXXXXXXXXXXXXXXXXX",
+            "                    ",
+            "                    ",
+            "                    ",
+            "   XXXXXXXXXX       ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "       XXX          ",
+            "                    ",
+            "                    ",
+            "                XX  ",
+            "                    ",
+            "XXXXX               ",
+            "   XXX          XXXX",
+            "                    "
+        ]
+
+        self.room3 = [
+            "                    ",
+            "  XXX             XX",
+            "XXXXXX          XXXX",
+            "                    ",
+            "           XXXXXX   ",
+            "         XXXXX      ",
+            "                    ",
+            "                    ",
+            "                    ",
+            " XXXXXX             ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "         XXXXXXXXXXX",
+            "                    ",
+            " XXXX XXXXXXXXX     ",
+            "   XXX    XX  XXXX X",
+            "                    "
+        ]
+
+        self.room3_2 = [
+            "                    ",
+            "  XXXXX           XX",
+            "XXXXX           XXXX",
+            "          XXXX      ",
+            "               XX   ",
+            "       XX           ",
+            "                    ",
+            "                    ",
+            "                    ",
+            " XXXXXX             ",
+            "                    ",
+            "                    ",
+            "           XXX      ",
+            "                    ",
+            "                    ",
+            "         XXXXXXXXXXX",
+            "XXXXXXXXX           ",
+            "      XXXXXXXXX     ",
+            "   XXX    XX  XXXX  ",
+            "                    "
+        ]
+
+        self.room0 = [
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "       XXXXXXXX     ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "            XX      ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "   XXX              ",
+            "               X    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    "
+        ]
+
+        self.room0_2 = [
+            "                    ",
+            "                    ",
+            "                    ",
+            "    XXX             ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "        XXXXXXXXX   ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "   XXXXXXXX         ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    "
+        ]
+
+        self.goalRoom = [
+            "                    ",
+            "  XXXXXXXXXXXXX   XX",
+            "XXXXXXXXXXXXXXXXXXXX",
+            "          XXXX      ",
+            "                    ",
+            "         GG         ",
+            "         GG         ",
+            "         GG         ",
+            "         GG         ",
+            "       XXXXXX       ",
+            "     XX      XX     ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "               XXXXX",
+            "                    ",
+            "XXXX                ",
+            "   XXX        XXXX  ",
+            "                    "
+        ]
+        self.createWorld(player, tiles, objects)
+
+    '''
+        createWorld function takes in solution scheme as input
+        and generates playable world as output
+
+        The playable world is 1600 x 1600 pixels in area. Each
+        400 x 400 pixel section corresponds to a solution scheme
+        room. This sequence creates each playable level section
+        according to the solution scheme by following the appropriate
+        room instructions.
+
+        Room instructions are an array of strings with Xs or ' '
+        A tile is placed where every X is to create the section.
+    '''
+    def createWorld(self, player, tiles, objects):
+        self.tiles.clear()
+        self.objects.empty()
+        self.player.rect = pygame.Rect((800, 1520), (40, 40))
         
-        self.collision(tiles)
+        soln = SolutionPath().level
+        goalRoom = True
 
+        for i in range(0, 4):
+            for j in range(0, 4):
+                choice = random.randint(0, 1)
+                if soln[i][j] == 0:
+                    if choice:
+                        soln[i][j] = self.room0
+                    else:
+                        soln[i][j] = self.room0_2
+                if soln[i][j] == 1:
+                    if choice:
+                        soln[i][j] = self.room1
+                    else:
+                        soln[i][j] = self.room1_2
+                if soln[i][j] == 2:
+                    if choice:
+                        soln[i][j] = self.room2
+                    else:
+                        soln[i][j] = self.room2_2
+                    if goalRoom:
+                        soln[i][j] = self.goalRoom
+                        goalRoom = False
+                if soln[i][j] == 3:
+                    if choice:
+                        soln[i][j] = self.room3
+                    else:
+                        soln[i][j] = self.room3_2
 
-    def collision(self, tiles):
-        for tile in tiles:
-            if pygame.sprite.collide_rect(self, tile):
-                # Reached goal object
-                if isinstance(tile, Goal):
-                    print("Reached Goal")
-                # Left and right collisions
-                if self.speed < 0:
-                    self.rect.left = tile.rect.right
-                if self.speed > 0:
-                    self.rect.right = tile.rect.left
-                # Top and bottom collisions
-                if self.vert < 0:
-                    self.rect.top = tile.rect.bottom
-                if self.vert > 0:
-                    self.rect.bottom = tile.rect.top
-                    self.vert = 0
-                    self.grounded = True
-                '''
+        x = y = 0
+        x2 = y2 = 0
+        for i in range(0, 4):
+            for j in range(0, 4):
+                for row in soln[i][j]:
+                    for col in row:
+                        if col == "X":
+                            tile = Tile((x, y))
+                            tiles.append(tile)
+                            objects.add(tile)
+                        if col == "G":
+                            goal = Goal((x, y))
+                            tiles.append(goal)
+                            objects.add(goal)
+                        x += 20
+                    y += 20
+                    x = x2
+                x2 += 400
+                y -= 400
+            y += 400
+            x2 = 0
 
-        
+        wall = Wall((0, 0), 20, 1600)
+        tiles.append(wall)
+        objects.add(wall)
+
+        wall = Wall((1580, 0), 20, 1600)
+        tiles.append(wall)
+        objects.add(wall)
+
+        wall = Wall((20, 0), 1560, 20)
+        tiles.append(wall)
+        objects.add(wall)
+
+        wall = Wall((20, 1580), 1560, 20)
+        tiles.append(wall)
+        objects.add(wall)
+
+        objects.add(self.player)
+
+        self.tiles = tiles
+        self.objects = objects
