@@ -279,6 +279,7 @@ def eval_genomes(genomes, config):
         screen.fill((0, 0, 0))
         scoreboard(player_score, ai_score)
 
+
         for game_object in game_objects.obstacles:
             game_object.draw()
 
