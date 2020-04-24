@@ -19,10 +19,11 @@ if __name__ == "__main__":
     objects = pygame.sprite.Group()
     tiles = []
     camera = Camera(SCREEN)
-    player = Player((800, 1540))
+    player = Player((800, 1540), Color(255, 255, 255))
+    ai_players = []
 
     # Build world
-    world = World(player, tiles, objects)
+    world = World(player, ai_players, tiles, objects)
 
     # Set up keys
     left = right = space = up = False
