@@ -20,6 +20,8 @@ button_font = pygame.font.SysFont(None, 50)
 win_msg = win_font.render('Win!', True, (0, 128, 0))
 info_font = pygame.font.SysFont(None, 30)
 score_font = pygame.font.SysFont(None, 30)
+small_font = pygame.font.SysFont(None, 20)
+smaller_font = pygame.font.SysFont(None, 10)
 
 game_elements.ai_score = 0
 game_elements.player_score = 0
@@ -49,36 +51,36 @@ def scoreboard(player_score, ai_score):
     make_button("Menu", button_font, white, mid_blue, lighter_blue, SCREEN.width - 100, 0, 100, 50, "menu")
 
     # place border and background
-    pygame.draw.rect(screen, white, (5, 5, 300, 200))
-    pygame.draw.rect(screen, (0,0,0), (10, 10, 290, 190))
+    pygame.draw.rect(screen, white, (5, 5, 150, 100))
+    pygame.draw.rect(screen, (0,0,0), (10, 10, 140, 90))
 
     # Add title of scoreboard
-    text_surf, text_rect = text_objects("Score", win_font, white)
-    text_rect.center = (155, 35)
+    text_surf, text_rect = text_objects("Score", info_font, white)
+    text_rect.center = (77, 22)
     screen.blit(text_surf, text_rect)
 
     # add rectangles to house the points
-    pygame.draw.rect(screen, (47, 79, 79), (30, 65, 100, 115))
-    pygame.draw.rect(screen, (47, 79, 79), (180, 65, 100, 115))
+    pygame.draw.rect(screen, (47, 79, 79), (20, 34, 50, 62))
+    pygame.draw.rect(screen, (47, 79, 79), (90, 34, 50, 62))
 
     # add score titles
     # human title first
-    text_surf, text_rect = text_objects("Human", score_font, white)
-    text_rect.center = (80, 90)
+    text_surf, text_rect = text_objects("Human", small_font, white)
+    text_rect.center = (44, 42)
     screen.blit(text_surf, text_rect)
     # ai title second
-    text_surf, text_rect = text_objects("AI", score_font, white)
-    text_rect.center = (230, 90)
+    text_surf, text_rect = text_objects("AI", small_font, white)
+    text_rect.center = (115, 42)
     screen.blit(text_surf, text_rect)
 
     # add scores in the boxes
     # player score first
-    text_surf, text_rect = text_objects(str(player_score), win_font, white)
-    text_rect.center = (80, 155)
+    text_surf, text_rect = text_objects(str(player_score), button_font, white)
+    text_rect.center = (44, 75)
     screen.blit(text_surf, text_rect)
     # ai score second
-    text_surf, text_rect = text_objects(str(ai_score), win_font, white)
-    text_rect.center = (230, 155)
+    text_surf, text_rect = text_objects(str(ai_score), button_font, white)
+    text_rect.center = (115, 75)
     screen.blit(text_surf, text_rect)
 
 # output the information screen
@@ -284,7 +286,9 @@ def eval_genomes(genomes, config):
     clock = pygame.time.Clock()
 
     # Set background
-    background = pygame.image.load("background.png").convert()
+    local_dir = os.path.dirname(__file__)
+    background_path = os.path.join(local_dir, 'background.png')
+    background = pygame.image.load(background_path).convert()
     screen.blit(background, [0,0])
 
     # Set game objects
