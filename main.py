@@ -261,6 +261,9 @@ def eval_genomes(genomes, config):
             # did we achieve the goal?
             if obst == goal:
                 genome[players.index(p)].fitness += 10
+                neural_nets.pop(players.index(p))
+                genome.pop(players.index(p))
+                players.pop(players.index(p))
             else:
                 # decrease exist counter for this player
                 p.life_counter -= 1
@@ -268,8 +271,7 @@ def eval_genomes(genomes, config):
             if p.life_counter < 0:
                 # remove this player and neural net
                 genome[players.index(p)].fitness -= 5  # remove some fitness for not making it to the goal
-                genome[players.index(
-                    p)].fitness += 2 * obst  # add some fitness back proportional to how close it got to the goal
+                genome[players.index(p)].fitness += 2 * obst  # add some fitness back proportional to how close it got to the goal
                 neural_nets.pop(players.index(p))
                 genome.pop(players.index(p))
                 players.pop(players.index(p))
