@@ -2,6 +2,7 @@ import sys
 import os
 import pygame
 import neat
+from math import hypot as dist
 from pygame import *
 import game_elements
 from game_elements import *
@@ -325,78 +326,59 @@ def eval_genomes(genomes, config):
             if e.type == KEYUP and e.key == K_UP:
                 up = False
         
+        screen.blit(background, [0,0])
+        camera.update(player)
+
+        player.move(left, right, space, up, world)
+        
         
         # SET UP AI PLAYER
         '''
-        obstacles = game_objects.obstacles
-        winning_path = [0, 1, 2, 3, 4]
-        goal = 4
-        cur_goal = 0
+            -----------------------------------------------------------------------------------------------------------
+        '''
         for i, p in enumerate(players):
-            x, y, obst = p.get_position()
-            # where do we need to get to based on where we currently are (except if we are on goal)
-            if obst != goal:
-                cur_goal = obst + 1
-            else: # stay where we are for right now (on top of the goal block)
-                cur_goal = goal
-
-            from_goal = obstacles[cur_goal].x - x
+            x = players[i].rect.x
+            y = players[i].rect.y
+            from_goal = dist(p.goalX - x, p.goalY - y)
 
             output = neural_nets[players.index(p)].activate((x, y, from_goal))
 
             # set values to allow the computer to jump
             if output[1] > 0.5:
-                if not p.jumping:
-                    p.jumping = True
-                    p.on_obstacle = False
+                space2 = True
+                up2 = True
 
             # blocks to choose character's movement left and right
             if output[0] > 0.5:
-                p.moving_left = False
-                p.moving_right = True
+                left2 = False
+                right2 = True
             else:
-                p.moving_left = True
-                p.moving_right = False
+                left2 = True
+                right2 = False
 
-            prev_obst = obst
-            prev_x = x
 
-            p.move()
+            p.move(left2, right2, space2, up2, world)
 
             # get new position
-            x, y, obst = p.get_position()
+            x2 = players[i].rect.x
+            y2 = players[i].rect.y
+            new_from_goal = dist(p.goalX - x2, p.goalY - y2)
 
             # find if we backtracked from our cur_goal
-            if obst < prev_obst:
-                genome[players.index(p)].fitness -= 1
+            if new_from_goal < from_goal:
+                genome[players.index(p)].fitness -= 2
 
             # see if we are any closer to our goal
-            if obst > prev_obst:
+            if new_from_goal > from_goal:
                 genome[players.index(p)].fitness += 2
 
-            if obst != goal:
-                new_from_goal = abs(obstacles[(obst + 1)].x - x)
-            else:
-                new_from_goal = goal
-
-            if new_from_goal < abs(from_goal):
-                genome[players.index(p)].fitness += 0.1
-            else:
-                genome[i].fitness -= 0.1
-
-            # standing or jumping in place?
-            ''''''if prev_x < x + p.speed and prev_x > x - p.speed and obst != goal:
-                genome[players.index(p)].fitness -= 5
-                p.life_counter -= 2''''''
-
             # did we achieve the goal?
-            if obst == goal:
+            if new_from_goal > from_goal == 0:
                 # if we achieved the goal, we will take this instance out and its fitness will increase
                 genome[players.index(p)].fitness += 15
                 neural_nets.pop(players.index(p))
                 genome.pop(players.index(p))
                 players.pop(players.index(p))
-                ai_score += 1
             else:
                 # decrease exist counter for this player
                 p.life_counter -= 1
@@ -404,11 +386,13 @@ def eval_genomes(genomes, config):
             if p.life_counter < 0:
                 # remove this player and neural net
                 genome[players.index(p)].fitness -= 5  # remove some fitness for not making it to the goal
-                genome[players.index(p)].fitness += 2 * obst  # add some fitness back proportional to how close it got to the goal
+                genome[players.index(p)].fitness += 0.002 * new_from_goal  # add some fitness back proportional to how close it got to the goal
                 neural_nets.pop(players.index(p))
                 genome.pop(players.index(p))
-                players.pop(players.index(p)) '''
-
+                players.pop(players.index(p))
+        '''
+            -----------------------------------------------------------------------------------------------------------
+        '''
 
         # reset the winner, so it doesn't mess up the loop's dependencies
         if player.win and player.isBot:
@@ -423,11 +407,6 @@ def eval_genomes(genomes, config):
             players.clear()
 
         # at the end of the loop make sure everything updates constantly
-        screen.blit(background, [0,0])
-        camera.update(player)
-
-        player.move(left, right, space, up, world)
-
         for obj in world.objects:
             screen.blit(obj.image, camera.apply(obj))
 

@@ -63,6 +63,8 @@ class Player(pygame.sprite.Sprite):
         self.life_counter = 700
         self.win = False
         self.isBot = False
+        self.goalX = 200
+        self.goalY = 170
 
     def move(self, left, right, space, up, world):
         # Process key input results:
@@ -449,6 +451,8 @@ class World(object):
                     if goalRoom:
                         soln[i][j] = self.goalRoom
                         goalRoom = False
+                        for bot in self.ai_players:
+                            bot.goalX = (j * 400) + 200
                 if soln[i][j] == 3:
                     if choice:
                         soln[i][j] = self.room3
