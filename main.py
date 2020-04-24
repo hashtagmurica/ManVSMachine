@@ -20,6 +20,9 @@ button_font = pygame.font.SysFont(None, 50)
 win_msg = win_font.render('Win!', True, (0, 128, 0))
 info_font = pygame.font.SysFont(None, 30)
 
+ai_score = 0
+player_score = 0
+
 
 # set path and load images for menu icons
 script_dir = os.path.dirname(__file__)
@@ -166,8 +169,8 @@ def scoreboard(player_score, ai_score):
 # Run A.I. simulation of the game
 def eval_genomes(genomes, config):
 
-    player_score = 0
-    ai_score = 0
+    global ai_score
+    global player_score
 
     # lists to hold the players, the genomes, and the neural net associated with that genome
     neural_nets = []
@@ -175,7 +178,6 @@ def eval_genomes(genomes, config):
     players = []
 
     win = False
-
 
     # initialize neural nets and genomes
     for _, g in genomes:
@@ -297,6 +299,7 @@ def eval_genomes(genomes, config):
         if win:
             screen.blit(win_msg, (screen_width // 2, screen_height // 2))
             player_score += 1
+            players.clear()
 
 
         pygame.display.update()
