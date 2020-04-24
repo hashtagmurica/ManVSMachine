@@ -20,9 +20,8 @@ win_msg = win_font.render('Win!', True, (0, 128, 0))
 info_font = pygame.font.SysFont(None, 30)
 score_font = pygame.font.SysFont(None, 30)
 
-# global variables to track the player and ai scores
-ai_score = 0
-player_score = 0
+game_elements.ai_score = 0
+game_elements.player_score = 0
 
 # set path and load images for menu icons
 script_dir = os.path.dirname(__file__)
@@ -38,13 +37,15 @@ green = (0, 128, 0)
 lightgreen = (0, 175, 0)
 blue = (0, 0, 125)
 lightblue = (0,0,200)
+mid_blue= (90, 140, 240)
+lighter_blue = (100, 240, 250)
 white = (255, 255, 255)
 
 # function to create the counters for score while the game plays
 def scoreboard(player_score, ai_score):
 
     # creates the exit button in the top right corner
-    make_button("Menu", button_font, green, red, lightred, SCREEN.width - 100, 0, 100, 50, "menu")
+    make_button("Menu", button_font, white, mid_blue, lighter_blue, SCREEN.width - 100, 0, 100, 50, "menu")
 
     # place border and background
     pygame.draw.rect(screen, white, (5, 5, 300, 200))
@@ -144,12 +145,12 @@ def game_info():
         text_rect.center = (int(SCREEN.width / 2.06) + 10, 425)
         screen.blit(text_surf, text_rect)
 
-        text_surf, text_rect = text_objects('Good luck!', win_font, lightred)
+        text_surf, text_rect = text_objects('Good luck!', win_font, lightgreen)
         text_rect.center = (int(SCREEN.width / 2) + 10, 525)
         screen.blit(text_surf, text_rect)
 
         # make a lil button to get back to the menu
-        make_button('Back', score_font, lightblue, green, lightgreen, SCREEN.width - 200, SCREEN.height - 100, 100, 50, "menu")
+        make_button('Back', score_font, white, lightblue, mid_blue, SCREEN.width - 200, SCREEN.height - 100, 100, 50, "menu")
 
         pygame.display.update()
 
@@ -175,14 +176,14 @@ def game_menu():
                 quit()
 
         # title words
-        text_surf, text_rect = text_objects('Welcome to Man vs. Machine', menu_font, lightblue)
+        text_surf, text_rect = text_objects('Welcome to Man vs. Machine', menu_font, lighter_blue)
         text_rect.center = (int(SCREEN.width / 2), int(SCREEN.height / 2))
         screen.blit(text_surf, text_rect)
 
         # call functions to create buttons to move to other screens or quit
-        make_button('Start', button_font, green, red, lightred, 150, SCREEN.height - 200, 200, 100, "sett")
-        make_button('Quit', button_font, green, red, lightred, SCREEN.width - 100, SCREEN.height-50, 100, 50, "quit")
-        make_button('Info', button_font, green, red, lightred, SCREEN.width - 200 - 150, SCREEN.height - 200, 200, 100, "info")
+        make_button('Start', button_font, white, lightblue, mid_blue, 150, SCREEN.height - 200, 200, 100, "sett")
+        make_button('Quit', button_font, white, lightblue, mid_blue, SCREEN.width - 100, SCREEN.height-50, 100, 50, "quit")
+        make_button('Info', button_font, white, lightblue, mid_blue, SCREEN.width - 200 - 150, SCREEN.height - 200, 200, 100, "info")
 
         pygame.display.update()
 
@@ -257,10 +258,6 @@ def text_objects(text, font, color):
 
 # Run A.I. simulation of the game - calculates the fitness function
 def eval_genomes(genomes, config):
-
-    # fetch the global variables for the scoreboard
-    global ai_score
-    global player_score
 
     # lists to hold the players, the genomes, and the neural net associated with that genome and player
     neural_nets = []
@@ -410,11 +407,8 @@ def eval_genomes(genomes, config):
                 genome[players.index(p)].fitness += 2 * obst  # add some fitness back proportional to how close it got to the goal
                 neural_nets.pop(players.index(p))
                 genome.pop(players.index(p))
-                players.pop(players.index(p))
-                '''
+                players.pop(players.index(p)) '''
 
-        # add the scoreboard
-        scoreboard(player_score, ai_score)
 
         # reset the winner, so it doesn't mess up the loop's dependencies
         if player.win and player.isBot:
@@ -426,7 +420,6 @@ def eval_genomes(genomes, config):
 
         # increment user score and end the iteration once you make it to the end
         if win:
-            player_score += 1
             players.clear()
 
         # at the end of the loop make sure everything updates constantly
@@ -437,6 +430,9 @@ def eval_genomes(genomes, config):
 
         for obj in world.objects:
             screen.blit(obj.image, camera.apply(obj))
+
+        # add the scoreboard
+        scoreboard(game_elements.player_score, game_elements.ai_score)
 
         pygame.display.update()
 

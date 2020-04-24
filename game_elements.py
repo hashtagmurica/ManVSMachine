@@ -5,6 +5,10 @@ import random
 SCREEN = pygame.Rect((0, 0, 960, 640))
 LEVEL = pygame.Rect((0, 0, 1600, 1600))
 
+# global variables to track the player and ai scores
+ai_score = 0
+player_score = 0
+
 '''
     Player class, Camera, and other GameObjects
 
@@ -86,6 +90,8 @@ class Player(pygame.sprite.Sprite):
         self.collision(0, self.vert, world)
 
     def collision(self, speed, vert, world):
+        global ai_score
+        global player_score
         for tile in world.tiles:
             if pygame.sprite.collide_rect(self, tile):
                 # Reached goal object
@@ -93,6 +99,10 @@ class Player(pygame.sprite.Sprite):
                     self.vert = 0
                     self.speed = 0
                     self.win = True
+                    if self.win and self.isBot:
+                        ai_score += 1
+                    if self.win and not self.isBot:
+                        player_score += 1
                     world.createWorld(self, self, world.tiles, world.objects)
                 # Left and right collisions
                 if speed < 0:
