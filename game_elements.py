@@ -60,7 +60,7 @@ class Player(pygame.sprite.Sprite):
         self.speed = 0
         self.vert = 0
         self.grounded = False
-        self.life_counter = 700
+        self.life_counter = 2000
         self.win = False
         self.isBot = False
         self.goalX = 200
