@@ -3,6 +3,8 @@ import pygame
 obstacles = []
 
 class Block():
+    '''Class for all the game obstacles'''
+
     def __init__(self, screen, x, y, width, height, color):
         self.screen = screen
         self.screen_width = screen.get_rect().right

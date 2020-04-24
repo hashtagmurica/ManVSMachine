@@ -166,13 +166,13 @@ def scoreboard(player_score, ai_score):
     screen.blit(text_surf, text_rect)
 
 
-# Run A.I. simulation of the game
+# Run A.I. simulation of the game - calculates the fitness function
 def eval_genomes(genomes, config):
 
     global ai_score
     global player_score
 
-    # lists to hold the players, the genomes, and the neural net associated with that genome
+    # lists to hold the players, the genomes, and the neural net associated with that genome and player
     neural_nets = []
     genome = []
     players = []
@@ -211,11 +211,14 @@ def eval_genomes(genomes, config):
         cur_goal = 0
         for i, p in enumerate(players):
             x, y, obst = p.get_position()
+            # where do we need to get to based on where we currently are (except if we are on goal)
             if obst != goal:
                 cur_goal = obst + 1
             else: # stay where we are for right now (on top of the goal block)
                 cur_goal = goal
+
             from_goal = obstacles[cur_goal].x - x
+
             output = neural_nets[players.index(p)].activate((x, y, from_goal))
 
             if output[1] > 0.5:
@@ -235,6 +238,7 @@ def eval_genomes(genomes, config):
 
             p.move()
 
+            # get new position
             x, y, obst = p.get_position()
 
             # find if we backtracked from our cur_goal
@@ -266,6 +270,7 @@ def eval_genomes(genomes, config):
                 neural_nets.pop(players.index(p))
                 genome.pop(players.index(p))
                 players.pop(players.index(p))
+                ai_score += 1
             else:
                 # decrease exist counter for this player
                 p.life_counter -= 1

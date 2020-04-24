@@ -2,6 +2,7 @@ import pygame
 import game_objects
 
 class Player():
+    '''Class for human players and objects'''
 
     def __init__(self, screen, color = None):
         self.screen = screen
@@ -64,7 +65,7 @@ class Player():
                     self.y = self.y - fall_dist - collision_diff
         else:
             if self.on_obstacle:
-                if self.check_fall():
+                if self.check_fall(): # did we walk off the end of the obstacle?
                     # start falling
                     self.jumping = True
                     self.jump_counter = 0
