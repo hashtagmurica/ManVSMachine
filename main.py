@@ -206,7 +206,7 @@ def eval_genomes(genomes, config):
     clock = pygame.time.Clock()
 
     # call player constructor to create a movable character
-    human_player = Player(screen, pygame.Color((255, 100, 50)))
+    human_player = Player(screen, pygame.Color(255, 100, 50))
 
     run_simulation = True
     while run_simulation and len(players) > 0:
