@@ -284,6 +284,8 @@ def eval_genomes(genomes, config):
 
         screen.fill((0, 0, 0))
 
+        human_player.draw()
+
         for game_object in game_objects.obstacles:
             game_object.draw()
 
