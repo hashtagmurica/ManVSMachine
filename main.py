@@ -46,7 +46,6 @@ score_font = pygame.font.SysFont(None, 30)
 scoreboard = []
 
 
-
 def run_human_player():
 
     game_objects.init(screen)
@@ -132,7 +131,33 @@ def run_human_player():
     sys.exit()
 
 
-'''Run A.I. simulation of the game'''
+def add_player(player):
+
+    player.draw()
+
+    keys = pygame.key.get_pressed()
+
+    if keys[pygame.K_SPACE]:
+        if not (player.jumping):
+            player.jumping = True
+            player.on_obstacle = False
+
+    if keys[pygame.K_LEFT]:
+        player.moving_left = True
+        player.moving_right = False
+
+    elif keys[pygame.K_RIGHT]:
+        player.moving_left = False
+        player.moving_right = True
+
+    else:
+        player.moving_left = False
+        player.moving_right = False
+
+    player.move()
+
+
+# Run A.I. simulation of the game
 def eval_genomes(genomes, config):
 
     # lists to hold the players, the genomes, and the neural net associated with that genome
@@ -210,7 +235,6 @@ def eval_genomes(genomes, config):
                 p.moving_left = True
                 p.moving_right = False
 
-
             prev_obst = obst
             prev_x = x
 
@@ -287,7 +311,8 @@ def run(config_file):
     num_generations = 100
 
     # eventually change this to be called in main -- the menu will launch the rest
-    game_menu()
+        # commented out, but left for testing and logging purposes
+    # game_menu()
     results = p.run(eval_genomes, num_generations)
 
     # show stats
@@ -354,7 +379,6 @@ def game_info():
         text_rect.center = (int(screen_width / 2) + 10, 500)
         screen.blit(text_surf, text_rect)
 
-
         make_button('Back', score_font, lightblue, green, lightgreen, screen_width - 200, screen_height - 100, 100, 50, "menu")
 
         pygame.display.update()
@@ -400,7 +424,7 @@ def game_settings():
                 pygame.quit()
                 quit()
 
-        screen.fill((0,0,0))
+        screen.fill((0, 0, 0))
 
         text_surf, text_rect = text_objects('Man vs Machine', menu_font, lightblue)
         text_rect.center = (int(screen_width / 2), 50)
@@ -424,9 +448,9 @@ def make_button (text, font, textcolor, color_off, color_on, x_pos, y_pos, width
 
     if x_pos + width > mouse[0] > x_pos and y_pos + height > mouse[1] > y_pos:
         pygame.draw.rect(screen, color_on, (int(x_pos), int(y_pos), int(width), int(height)))
-        if click[0] == 1 and action != None:
+        if click[0] == 1 and action is not None:
             if action == 'sett':
-                #start game action
+                # start game action
                 game_settings()
             elif action == 'quit':
                 pygame.quit()
@@ -436,16 +460,16 @@ def make_button (text, font, textcolor, color_off, color_on, x_pos, y_pos, width
             elif action == 'info':
                 game_info()
             elif action == 'easy':
-                run_human_player()
+                run(config_easy)
             elif action == 'med':
-                run_human_player()
+                run(config_med)
             elif action == 'hard':
-                run_human_player()
+                run(config_hard)
     else:
         pygame.draw.rect(screen, color_off, (int(x_pos), int(y_pos), int(width), int(height)))
 
     text_surf, text_rect = text_objects(text, font, textcolor)
-    text_rect.center = ( (int(x_pos) + int(width/2), int(y_pos) + int(height/2)) )
+    text_rect.center = (int(x_pos) + int(width / 2), int(y_pos) + int(height / 2))
 
     screen.blit(text_surf, text_rect)
 
@@ -460,6 +484,13 @@ if __name__ == "__main__":
 
     # run_human_player()
 
+    # set file paths to respective difficulty levels
     local_dir = os.path.dirname(__file__)
     config_path = os.path.join(local_dir, 'config-neat.txt')
-    run(config_path)
+    config_easy = os.path.join(local_dir, 'config-neat-easy.txt')
+    config_med = os.path.join(local_dir, 'config-neat-medium.txt')
+    config_hard = os.path.join(local_dir, 'config-neat-hard.txt')
+
+    # this will run the normal configuration for the base implementation of AI
+    # run(config_path)
+    game_menu()

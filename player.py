@@ -3,7 +3,7 @@ import game_objects
 
 class Player():
 
-    def __init__(self, screen):
+    def __init__(self, screen, color = None):
         self.screen = screen
         self.screen_width = screen.get_rect().right
         self.ground = screen.get_height()-5
@@ -12,7 +12,10 @@ class Player():
         self.speed = 5
         self.width = 40
         self.height = 60
-        self.color = 0, 255, 0
+        if color is None:
+            self.color = 0, 170, 0
+        else:
+            self.color = color
         self.moving_left = False
         self.moving_right = False
         self.on_obstacle = False # False = on the "ground"
