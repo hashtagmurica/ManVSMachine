@@ -439,8 +439,11 @@ def game_info():
 # output the starting menu
 def game_menu():
 
-    global player_score = 0
-    global ai_score = 0
+    global player_score
+    global ai_score
+
+    player_score = 0
+    ai_score = 0
 
     intro = True
 
