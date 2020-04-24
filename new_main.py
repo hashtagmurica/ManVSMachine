@@ -301,6 +301,7 @@ def eval_genomes(genomes, config):
 
     # Set up keys
     left = right = space = up = False
+    left2 = right2 = space2 = up2 = False
 
     # GAME LOOP
     run_simulation = True
