@@ -52,27 +52,6 @@ def run_human_player():
 
     player = Player(screen)
 
-    '''     THIS WILL BE THE SCOREBOARD SECTION BUT I HAVEN'T DECIDED WHAT THAT'LL LOOK LIKE YET
-    player_score = 0
-    ai_score = 0
-
-
-
-    score_out = '|   ' + str(player_score) + '                      ' + str(ai_score) + '   |'
-    scoreblock = ['          SCORE',
-                  '-----------------------------',
-                  '|Human    Computer|',
-                  score_out,
-                  '-----------------------------']
-
-    for line in scoreblock:
-        scoreboard.append(score_font.render(str(line), True, (32, 100, 128)))
-    for line in range(5):
-        screen.blit(scoreboard[line], (0, 10 + (line * 15)))
-
-    pygame.display.update()
-
-    '''
     clock = pygame.time.Clock()
 
     # main loop
@@ -108,7 +87,7 @@ def run_human_player():
         if win:
             win = False # reset win
 
-        if player.on_obstacle and player.obstacle == 6:
+        if player.on_obstacle and player.obstacle == 5:
             win = True
 
         screen.fill((0,0,0))
@@ -157,6 +136,42 @@ def add_player(player):
     player.move()
 
 
+def scoreboard():
+    '''
+    pygame.draw.rect(screen, color_on, (int(x_pos), int(y_pos), int(width), int(height)))
+    text_surf, text_rect = text_objects(text, font, textcolor)
+    text_rect.center = (int(x_pos) + int(width / 2), int(y_pos) + int(height / 2))'''
+
+    make_button("Menu", button_font, green, red, lightred, screen_width - 100, 0, 100, 50, "menu")
+
+    pygame.draw.rect(screen, white, (5, 5, 300, 200))
+    pygame.draw.rect(screen, (0,0,0), (10, 10, 290, 190))
+
+    text_surf, text_rect = text_objects("Score", win_font, white)
+    text_rect.center = (155, 35)
+    screen.blit(text_surf, text_rect)
+
+    pygame.draw.rect(screen, (47, 79, 79), (30, 65, 100, 115))
+    pygame.draw.rect(screen, (47, 79, 79), (180, 65, 100, 115))
+
+    text_surf, text_rect = text_objects("Human", score_font, white)
+    text_rect.center = (80, 90)
+    screen.blit(text_surf, text_rect)
+
+    text_surf, text_rect = text_objects("AI", score_font, white)
+    text_rect.center = (230, 90)
+    screen.blit(text_surf, text_rect)
+
+
+    text_surf, text_rect = text_objects(str(player_score), win_font, white)
+    text_rect.center = (80, 155)
+    screen.blit(text_surf, text_rect)
+
+    text_surf, text_rect = text_objects(str(ai_score), win_font, white)
+    text_rect.center = (230, 155)
+    screen.blit(text_surf, text_rect)
+
+
 # Run A.I. simulation of the game
 def eval_genomes(genomes, config):
 
@@ -164,6 +179,8 @@ def eval_genomes(genomes, config):
     neural_nets = []
     genome = []
     players = []
+
+    win = False
 
     # initialize neural nets and genomes
     for _, g in genomes:
@@ -178,7 +195,7 @@ def eval_genomes(genomes, config):
 
     clock = pygame.time.Clock()
 
-    human_player = Player(screen, pygame.Color((255, 165, 0)))
+    human_player = Player(screen, pygame.Color((255, 100, 50)))
 
     run_simulation = True
     while run_simulation and len(players) > 0:
@@ -281,8 +298,8 @@ def eval_genomes(genomes, config):
                 genome.pop(players.index(p))
                 players.pop(players.index(p))
 
-
         screen.fill((0, 0, 0))
+        scoreboard()
 
         human_player.draw()
 
@@ -291,6 +308,19 @@ def eval_genomes(genomes, config):
 
         for p in players:
             p.draw()
+
+        human_player.draw()
+
+        if win:
+            win = False # reset win
+
+        if human_player.on_obstacle and human_player.obstacle == 5:
+            win = True
+
+        if win:
+            screen.blit(win_msg, (screen_width // 2, screen_height // 2))
+            player_score += 1
+
 
         pygame.display.update()
 
@@ -311,6 +341,7 @@ def run(config_file):
 
     # run the simulation
     num_generations = 100
+
 
     # eventually change this to be called in main -- the menu will launch the rest
         # commented out, but left for testing and logging purposes
