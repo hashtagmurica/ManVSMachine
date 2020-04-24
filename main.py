@@ -381,7 +381,7 @@ def game_info():
         text_rect.center = (int(screen_width / 2), 50)
         screen.blit(text_surf, text_rect)
 
-        # lines 383 - 428 simply output text explanations to the screen
+        # lines 383 - 432 simply output text explanations to the screen
         text_surf, text_rect = text_objects('Man vs Machine is a small-scale platforming game', info_font, white)
         text_rect.center = (int(screen_width / 3), 125)
         screen.blit(text_surf, text_rect)
@@ -414,18 +414,23 @@ def game_info():
         text_rect.center = (int(screen_width / 3.43) + 10, 350)
         screen.blit(text_surf, text_rect)
 
-        text_surf, text_rect = text_objects('If any of the AI beat you there, you lose!', info_font, white)
+        text_surf, text_rect = text_objects('If any of the AI beat you there, they win!', info_font, white)
         text_rect.center = (int(screen_width / 3.77) + 10, 375)
         screen.blit(text_surf, text_rect)
 
-        text_surf, text_rect = text_objects('As soon as you finish a level, you\'ll continue on to a new, randomly generated one', info_font, white)
-        text_rect.center = (int(screen_width / 2.099) + 10, 400)
+        text_surf, text_rect = text_objects('As soon as you finish a level, you\'ll continue on to a new one', info_font, white)
+        text_rect.center = (int(screen_width / 2.71) + 10, 400)
+        screen.blit(text_surf, text_rect)
+
+        text_surf, text_rect = text_objects('There are more AI than there are of you, so multiple AI could beat you in one round!', info_font, white)
+        text_rect.center = (int(screen_width / 2.06) + 10, 425)
         screen.blit(text_surf, text_rect)
 
         text_surf, text_rect = text_objects('Good luck!', win_font, lightred)
-        text_rect.center = (int(screen_width / 2) + 10, 500)
+        text_rect.center = (int(screen_width / 2) + 10, 525)
         screen.blit(text_surf, text_rect)
 
+        # make a lil button to get back to the menu
         make_button('Back', score_font, lightblue, green, lightgreen, screen_width - 200, screen_height - 100, 100, 50, "menu")
 
         pygame.display.update()
