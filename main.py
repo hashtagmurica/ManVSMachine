@@ -5,21 +5,27 @@ import neat
 from player import Player
 import game_objects
 
+# variables for the size of the screen
 screen_width = 960
 screen_height = 640
 
+# start a pygame module and
 pygame.init()
 screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("Python Programming Project")
+pygame.display.set_caption("Man vs Machine")
 
-# set fonts for the different uses in game
+
+# set fonts for the different uses in game, then the winning message when you beat the computer
 pygame.font.init()
 win_font = pygame.font.SysFont(None, 65)
 menu_font = pygame.font.SysFont(None, 100)
 button_font = pygame.font.SysFont(None, 50)
 win_msg = win_font.render('Win!', True, (0, 128, 0))
 info_font = pygame.font.SysFont(None, 30)
+score_font = pygame.font.SysFont(None, 30)
 
+
+# global variables to track the player and ai scores
 ai_score = 0
 player_score = 0
 
@@ -31,6 +37,7 @@ ai_img_path = os.path.join(script_dir, 'bot.png')
 human_img = pygame.image.load(human_img_path)
 ai_img = pygame.image.load(ai_img_path)
 
+
 # set some simple colors for use later on with buttons and whatnot
 red = (200, 0, 25)
 lightred = (255, 0, 50)
@@ -40,12 +47,7 @@ blue = (0, 0, 125)
 lightblue = (0,0,200)
 white = (255, 255, 255)
 
-
-
-score_font = pygame.font.SysFont(None, 30)
-
-
-
+'''
 def run_human_player():
 
     game_objects.init(screen)
@@ -108,6 +110,7 @@ def run_human_player():
 
     pygame.quit()
     sys.exit()
+'''
 
 
 def add_player_movement(player):
@@ -134,33 +137,41 @@ def add_player_movement(player):
     player.move()
 
 
+# function to create the counters for score while the game plays
 def scoreboard(player_score, ai_score):
 
+    # creates the exit button in the top right corner
     make_button("Menu", button_font, green, red, lightred, screen_width - 100, 0, 100, 50, "menu")
 
+    # place border and background
     pygame.draw.rect(screen, white, (5, 5, 300, 200))
     pygame.draw.rect(screen, (0,0,0), (10, 10, 290, 190))
 
+    # Add title of scoreboard
     text_surf, text_rect = text_objects("Score", win_font, white)
     text_rect.center = (155, 35)
     screen.blit(text_surf, text_rect)
 
+    # add rectangles to house the points
     pygame.draw.rect(screen, (47, 79, 79), (30, 65, 100, 115))
     pygame.draw.rect(screen, (47, 79, 79), (180, 65, 100, 115))
 
+    # add score titles
+    # human title first
     text_surf, text_rect = text_objects("Human", score_font, white)
     text_rect.center = (80, 90)
     screen.blit(text_surf, text_rect)
-
+    # ai title second
     text_surf, text_rect = text_objects("AI", score_font, white)
     text_rect.center = (230, 90)
     screen.blit(text_surf, text_rect)
 
-
+    # add scores in the boxes
+    # player score first
     text_surf, text_rect = text_objects(str(player_score), win_font, white)
     text_rect.center = (80, 155)
     screen.blit(text_surf, text_rect)
-
+    # ai score second
     text_surf, text_rect = text_objects(str(ai_score), win_font, white)
     text_rect.center = (230, 155)
     screen.blit(text_surf, text_rect)
@@ -169,6 +180,7 @@ def scoreboard(player_score, ai_score):
 # Run A.I. simulation of the game - calculates the fitness function
 def eval_genomes(genomes, config):
 
+    # fetch the global variables for the scoreboard
     global ai_score
     global player_score
 
@@ -177,6 +189,7 @@ def eval_genomes(genomes, config):
     genome = []
     players = []
 
+    # this tracks the user beating the AI
     win = False
 
     # initialize neural nets and genomes
@@ -192,6 +205,7 @@ def eval_genomes(genomes, config):
 
     clock = pygame.time.Clock()
 
+    # call player constructor to create a movable character
     human_player = Player(screen, pygame.Color((255, 100, 50)))
 
     run_simulation = True
@@ -221,11 +235,13 @@ def eval_genomes(genomes, config):
 
             output = neural_nets[players.index(p)].activate((x, y, from_goal))
 
+            # set values to allow the computer to jump
             if output[1] > 0.5:
                 if not p.jumping:
                     p.jumping = True
                     p.on_obstacle = False
 
+            # blocks to choose character's movement left and right
             if output[0] > 0.5:
                 p.moving_left = False
                 p.moving_right = True
@@ -260,13 +276,14 @@ def eval_genomes(genomes, config):
                 genome[i].fitness -= 0.1
 
             # standing or jumping in place?
-            if prev_x < x + p.speed and prev_x > x - p.speed and obst != goal:
+            '''if prev_x < x + p.speed and prev_x > x - p.speed and obst != goal:
                 genome[players.index(p)].fitness -= 5
-                p.life_counter -= 2
+                p.life_counter -= 2'''
 
             # did we achieve the goal?
             if obst == goal:
-                genome[players.index(p)].fitness += 10
+                # if we achieved the goal, we will take this instance out and its fitness will increase
+                genome[players.index(p)].fitness += 15
                 neural_nets.pop(players.index(p))
                 genome.pop(players.index(p))
                 players.pop(players.index(p))
@@ -283,33 +300,40 @@ def eval_genomes(genomes, config):
                 genome.pop(players.index(p))
                 players.pop(players.index(p))
 
+        # add the background and the scoreboard
         screen.fill((0, 0, 0))
         scoreboard(player_score, ai_score)
 
-
+        # add the obstacles across the stage
         for game_object in game_objects.obstacles:
             game_object.draw()
 
+        # add the ai_players from the list
         for p in players:
             p.draw()
 
+        # add the human player to the screen
         human_player.draw()
 
+        # reset the winner, so it doesn't mess up the loop's dependencies
         if win:
-            win = False # reset win
+            win = False  # reset win
 
+        # case for human landing on the correct goal obstacle
         if human_player.on_obstacle and human_player.obstacle == goal:
             win = True
 
+        # increment user score and end the iteration once you make it to the end
         if win:
             screen.blit(win_msg, (screen_width // 2, screen_height // 2))
             player_score += 1
             players.clear()
 
-
+        # at the end of the loop make sure everything updates constantly
         pygame.display.update()
 
 
+# implements the run method according to the neat configuration
 def run(config_file):
 
     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
