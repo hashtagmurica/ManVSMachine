@@ -38,12 +38,9 @@ lightblue = (0,0,200)
 white = (255, 255, 255)
 
 
-# code block to build a scoreboard
-player_score = 0
-ai_score = 0
+
 score_font = pygame.font.SysFont(None, 30)
-# list to hold multiple lines for the scoreboard
-scoreboard = []
+
 
 
 def run_human_player():
@@ -110,9 +107,7 @@ def run_human_player():
     sys.exit()
 
 
-def add_player(player):
-
-    player.draw()
+def add_player_movement(player):
 
     keys = pygame.key.get_pressed()
 
@@ -136,11 +131,7 @@ def add_player(player):
     player.move()
 
 
-def scoreboard():
-    '''
-    pygame.draw.rect(screen, color_on, (int(x_pos), int(y_pos), int(width), int(height)))
-    text_surf, text_rect = text_objects(text, font, textcolor)
-    text_rect.center = (int(x_pos) + int(width / 2), int(y_pos) + int(height / 2))'''
+def scoreboard(player_score, ai_score):
 
     make_button("Menu", button_font, green, red, lightred, screen_width - 100, 0, 100, 50, "menu")
 
@@ -175,12 +166,16 @@ def scoreboard():
 # Run A.I. simulation of the game
 def eval_genomes(genomes, config):
 
+    player_score = 0
+    ai_score = 0
+
     # lists to hold the players, the genomes, and the neural net associated with that genome
     neural_nets = []
     genome = []
     players = []
 
     win = False
+
 
     # initialize neural nets and genomes
     for _, g in genomes:
@@ -206,26 +201,7 @@ def eval_genomes(genomes, config):
                 pygame.quit()
                 sys.exit()
 
-        keys = pygame.key.get_pressed()
-
-        if keys[pygame.K_SPACE]:
-            if not (human_player.jumping):
-                human_player.jumping = True
-                human_player.on_obstacle = False
-
-        if keys[pygame.K_LEFT]:
-            human_player.moving_left = True
-            human_player.moving_right = False
-
-        elif keys[pygame.K_RIGHT]:
-            human_player.moving_left = False
-            human_player.moving_right = True
-
-        else:
-            human_player.moving_left = False
-            human_player.moving_right = False
-
-        human_player.move()
+        add_player_movement(human_player)
 
         obstacles = game_objects.obstacles
         winning_path = [0, 1, 2, 3, 4]
@@ -299,9 +275,7 @@ def eval_genomes(genomes, config):
                 players.pop(players.index(p))
 
         screen.fill((0, 0, 0))
-        scoreboard()
-
-        human_player.draw()
+        scoreboard(player_score, ai_score)
 
         for game_object in game_objects.obstacles:
             game_object.draw()
@@ -314,7 +288,7 @@ def eval_genomes(genomes, config):
         if win:
             win = False # reset win
 
-        if human_player.on_obstacle and human_player.obstacle == 5:
+        if human_player.on_obstacle and human_player.obstacle == goal:
             win = True
 
         if win:
